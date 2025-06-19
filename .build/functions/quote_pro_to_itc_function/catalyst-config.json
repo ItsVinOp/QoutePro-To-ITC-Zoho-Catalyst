@@ -1,0 +1,11 @@
+{
+	"deployment": {
+		"name": "quote_pro_to_itc_function",
+		"stack": "python_3_9",
+		"type": "advancedio",
+		"env_variables": {}
+	},
+	"execution": {
+		"main": "main.py"
+	}
+}

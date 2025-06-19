@@ -1,0 +1,9 @@
+{
+  "functions": {
+    "targets": [
+      "quote_pro_to_itc_function"
+    ],
+    "ignore": [],
+    "source": "functions"
+  }
+}

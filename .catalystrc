@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "project": 1,
+    "env": 1
+  },
+  "actives": {
+    "project": 1,
+    "env": 1
+  },
+  "projects": [
+    {
+      "idx": 1,
+      "id": "17826000000013001",
+      "name": "QuoteProToITC",
+      "domain": {
+        "id": "50028169879",
+        "name": "quoteprotoitc-60041822215.development"
+      },
+      "timezone": "Asia/Kolkata",
+      "env": [
+        {
+          "idx": 1,
+          "id": "60041822215",
+          "name": "Development",
+          "type": 3
+        }
+      ]
+    }
+  ]
+}
