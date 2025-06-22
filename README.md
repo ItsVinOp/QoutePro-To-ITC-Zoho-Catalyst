@@ -183,9 +183,3 @@ Authentication: Uses a hardcoded username and password (0443b34c-c7df-4239-a934-
 Catalyst Endpoint: Deployed at https://quoteprotoitc-60041822215.development.catalystserverless.in/quote-to-itc-webhook.
 
 
-Contributing
-Fork the repository.
-Create a feature branch (git checkout -b feature-branch).
-Commit changes (git commit -m "Add new feature").
-Push to the branch (git push origin feature-branch).
-Open a Pull Request.
