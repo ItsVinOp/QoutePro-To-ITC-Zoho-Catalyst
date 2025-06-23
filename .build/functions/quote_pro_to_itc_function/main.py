@@ -20,7 +20,7 @@ def json_to_acord_xml(data):
     cust_id = ET.SubElement(signon_transport, "CustId")
     ET.SubElement(cust_id, "SPName").text = "turborater.com"
     ET.SubElement(cust_id, "CustPermId").text = ""
-    ET.SubElement(signon_rs, "ClientDt").text = "2025-06-19T17:44:00+05:30"  # 05:44 PM IST
+    ET.SubElement(signon_rs, "ClientDt").text = "2025-06-20T18:08:00+05:30"  # 06:08 PM IST
     ET.SubElement(signon_rs, "CustLangPref").text = data["policy"]["native_language"]
     client_app = ET.SubElement(signon_rs, "ClientApp")
     ET.SubElement(client_app, "Org").text = "Insurance Technologies Corporation"
@@ -41,7 +41,7 @@ def json_to_acord_xml(data):
     # PersAutoPolicyQuoteInqRs Section
     pers_auto_policy = ET.SubElement(insurance_svc_rs, "PersAutoPolicyQuoteInqRs")
     ET.SubElement(pers_auto_policy, "RsUID").text = ""
-    ET.SubElement(pers_auto_policy, "TransactionRequestDt").text = "2025-06-19T17:44:00+05:30"  # 05:44 PM IST
+    ET.SubElement(pers_auto_policy, "TransactionRequestDt").text = "2025-06-20T18:08:00+05:30"  # 06:08 PM IST
     ET.SubElement(pers_auto_policy, "TransactionEffectiveDt").text = data["policy"]["effective_date"]
     ET.SubElement(pers_auto_policy, "CurCd").text = "USD"
 
@@ -308,6 +308,20 @@ def json_to_acord_xml(data):
     logger.info(f"Generated XML: {xml_str}")
     return xml_str
 
+# Function to refresh Zoho access token
+def refresh_zoho_token(refresh_token, client_id, client_secret):
+    url = "https://accounts.zoho.eu/oauth/v2/token"
+    data = {
+        "refresh_token": refresh_token,
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "grant_type": "refresh_token"
+    }
+    response = requests.post(url, data=data)
+    response.raise_for_status()
+    token_data = response.json()
+    return token_data["access_token"]
+
 def handler(request):
     app = zcatalyst_sdk.initialize()
     try:
@@ -362,12 +376,45 @@ def handler(request):
         itc_response.raise_for_status()
         itc_response_data = itc_response.json()
         logger.info(f"ITC response data: {json.dumps(itc_response_data, indent=2)}")
+
+        # Refresh Zoho access token
+        client_id = "1000.W8GPUXOON80H4CRRM9X8205B19AWQY"
+        client_secret = "a1e0ae4708cc94b62932cc6a3d9cd1a9ca2edeedab"
+        refresh_token = "1000.5f6c3bf3d67eec16b4eb585cc1978a6e.77749487509425826b731e1fefc241e3"  # Your refresh token
+        zoho_access_token = refresh_zoho_token(refresh_token, client_id, client_secret)
+
+        # Store data in Zoho CRM QuotePro_Raw_Data module
+        zoho_api_domain = "https://www.zohoapis.eu"
+        zoho_module = "QuotePro_Raw_Data"
+        zoho_url = f"{zoho_api_domain}/crm/v2/{zoho_module}"
+
+        # Prepare data for Zoho CRM
+        zoho_data = {
+            "data": [
+                {
+                    "Quote_Pro_Data": json.dumps(quotepro_data, indent=2)  # Store raw JSON as Rich-Text
+                }
+            ]
+        }
+        zoho_headers = {
+            "Authorization": f"Zoho-oauthtoken {zoho_access_token}",
+            "Content-Type": "application/json"
+        }
+        logger.info(f"Sending to Zoho CRM with body: {json.dumps(zoho_data, indent=2)}")
+        zoho_response = requests.post(zoho_url, headers=zoho_headers, json=zoho_data)
+        logger.info(f"Zoho CRM response status: {zoho_response.status_code}")
+        logger.info(f"Zoho CRM response text: {zoho_response.text}")
+        zoho_response.raise_for_status()
+        zoho_response_data = zoho_response.json()
+        logger.info(f"Zoho CRM response data: {json.dumps(zoho_response_data, indent=2)}")
+
         return {
             "status": 200,
             "body": {
                 "status": "success",
-                "message": "Quote created successfully in ITC",
-                "itc_response": itc_response_data
+                "message": "Quote created successfully in ITC and stored in Zoho CRM",
+                "itc_response": itc_response_data,
+                "zoho_response": zoho_response_data
             }
         }
     except Exception as e:
